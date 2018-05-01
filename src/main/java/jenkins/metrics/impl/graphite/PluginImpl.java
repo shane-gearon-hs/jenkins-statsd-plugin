@@ -32,6 +32,8 @@ public class PluginImpl extends Plugin {
 
     private transient Map<GraphiteServer, StatsDReporter> reporters;
 
+    private StatsDReporter envReporter;
+
     static final String SAMPLING_INTERVAL_PROPERTY = "graphite.metrics.intervalSeconds";
 
     /** Return the sampling interval to use, in seconds
@@ -57,10 +59,32 @@ public class PluginImpl extends Plugin {
             }
             reporters.clear();
         }
+        if (envReporter != null) {
+            envReporter.stop();
+        }
     }
 
     @Override
     public synchronized void postInitialize() throws Exception {
+        LOGGER.log(Level.INFO, "Started env statsd reporter");
+        if (envReporter == null) {
+            MetricRegistry registry = Metrics.metricRegistry();
+
+            String statsd_udp_host = System.getenv("STATSD_UDP_HOST");
+            String statsd_udp_port_str = System.getenv("STATSD_UDP_PORT");
+            // Remove beginning slash from marathon app id
+            String statsd_prefix = System.getenv("MARATHON_APP_ID").substring(1);
+            int statsd_udp_port = Integer.parseInt(statsd_udp_port_str);
+
+            StatsDReporter r = StatsDReporter.forRegistry(registry)
+                    .prefixedWith(statsd_prefix)
+                    .convertRatesTo(TimeUnit.MINUTES)
+                    .convertDurationsTo(TimeUnit.SECONDS)
+                    .filter(MetricFilter.ALL)
+                    .build(statsd_udp_host, statsd_udp_port);
+            envReporter = r;
+            LOGGER.log(Level.INFO, "Started env statsd reporter");
+        }
         updateReporters();
     }
 
@@ -85,23 +109,9 @@ public class PluginImpl extends Plugin {
         for (GraphiteServer s : descriptor.getServers()) {
             toStop.remove(s);
             if (reporters.containsKey(s)) continue;
-            //Graphite g = new Graphite(new InetSocketAddress(s.getHostname(), s.getPort()));
+            String statsd_udp_host = s.getHostname();
+            int statsd_udp_port = s.getPort();
             String prefix = StringUtils.isBlank(s.getPrefix()) ? hostname : s.getPrefix();
-            //GraphiteReporter r = GraphiteReporter.forRegistry(registry)
-            //        .prefixedWith(prefix)
-            //        .convertRatesTo(TimeUnit.MINUTES)
-            //        .convertDurationsTo(TimeUnit.SECONDS)
-            //        .filter(MetricFilter.ALL)
-            //        .build(g);
-
-           // LOGGER.log(Level.INFO, "Starting Graphite reporter to {0}:{1} with prefix {2}", new Object[]{
-            //        s.getHostname(), s.getPort(), prefix
-            //});
-            //r.start(getSamplingIntervalSeconds(), TimeUnit.SECONDS);
-
-            String statsd_udp_host = System.getenv("STATSD_UDP_HOST");
-            String statsd_udp_port_str = System.getenv("STATSD_UDP_PORT");
-            int statsd_udp_port = Integer.parseInt(statsd_udp_port_str);
 
             StatsDReporter r = StatsDReporter.forRegistry(registry)
                     .prefixedWith(prefix)
