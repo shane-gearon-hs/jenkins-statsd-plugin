@@ -104,7 +104,7 @@ public class PluginImpl extends Plugin {
             int statsd_udp_port = Integer.parseInt(statsd_udp_port_str);
 
             StatsDReporter r = StatsDReporter.forRegistry(registry)
-                    .prefixedWith("metric.prefix")
+                    .prefixedWith(prefix)
                     .convertRatesTo(TimeUnit.MINUTES)
                     .convertDurationsTo(TimeUnit.SECONDS)
                     .filter(MetricFilter.ALL)
