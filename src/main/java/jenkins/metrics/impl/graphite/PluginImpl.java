@@ -68,22 +68,23 @@ public class PluginImpl extends Plugin {
     public synchronized void postInitialize() throws Exception {
         if (envReporter == null) {
             MetricRegistry registry = Metrics.metricRegistry();
+            if (System.getenv("STATSD_UDP_HOST") != null) {
+                String statsd_udp_host = System.getenv("STATSD_UDP_HOST");
+                String statsd_udp_port_str = System.getenv("STATSD_UDP_PORT");
+                // Remove beginning slash from marathon app id
+                String statsd_prefix = System.getenv("MARATHON_APP_ID").substring(1);
+                int statsd_udp_port = Integer.parseInt(statsd_udp_port_str);
 
-            String statsd_udp_host = System.getenv("STATSD_UDP_HOST");
-            String statsd_udp_port_str = System.getenv("STATSD_UDP_PORT");
-            // Remove beginning slash from marathon app id
-            String statsd_prefix = System.getenv("MARATHON_APP_ID").substring(1);
-            int statsd_udp_port = Integer.parseInt(statsd_udp_port_str);
-
-            StatsDReporter r = StatsDReporter.forRegistry(registry)
-                    .prefixedWith(statsd_prefix)
-                    .convertRatesTo(TimeUnit.MINUTES)
-                    .convertDurationsTo(TimeUnit.SECONDS)
-                    .filter(MetricFilter.ALL)
-                    .build(statsd_udp_host, statsd_udp_port);
-            r.start(10, TimeUnit.SECONDS);
-            envReporter = r;
-            LOGGER.log(Level.INFO, "Started env statsd reporter");
+                StatsDReporter r = StatsDReporter.forRegistry(registry)
+                        .prefixedWith(statsd_prefix)
+                        .convertRatesTo(TimeUnit.MINUTES)
+                        .convertDurationsTo(TimeUnit.SECONDS)
+                        .filter(MetricFilter.ALL)
+                        .build(statsd_udp_host, statsd_udp_port);
+                r.start(10, TimeUnit.SECONDS);
+                envReporter = r;
+                LOGGER.log(Level.INFO, "Started env statsd reporter");
+            }
         }
         updateReporters();
     }
