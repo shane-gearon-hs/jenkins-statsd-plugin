@@ -66,7 +66,6 @@ public class PluginImpl extends Plugin {
 
     @Override
     public synchronized void postInitialize() throws Exception {
-        LOGGER.log(Level.INFO, "Started env statsd reporter");
         if (envReporter == null) {
             MetricRegistry registry = Metrics.metricRegistry();
 
@@ -82,6 +81,7 @@ public class PluginImpl extends Plugin {
                     .convertDurationsTo(TimeUnit.SECONDS)
                     .filter(MetricFilter.ALL)
                     .build(statsd_udp_host, statsd_udp_port);
+            r.start(10, TimeUnit.SECONDS);
             envReporter = r;
             LOGGER.log(Level.INFO, "Started env statsd reporter");
         }
