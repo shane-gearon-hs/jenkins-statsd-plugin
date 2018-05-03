@@ -72,7 +72,8 @@ public class PluginImpl extends Plugin {
                 String statsd_udp_host = System.getenv("STATSD_UDP_HOST");
                 String statsd_udp_port_str = System.getenv("STATSD_UDP_PORT");
                 // Remove beginning slash from marathon app id
-                String statsd_prefix = System.getenv("MARATHON_APP_ID").substring(1);
+                //String statsd_prefix = System.getenv("MARATHON_APP_ID").substring(1);
+                String statsd_prefix = "jenkinsstatsd";
                 int statsd_udp_port = Integer.parseInt(statsd_udp_port_str);
 
                 StatsDReporter r = StatsDReporter.forRegistry(registry)
