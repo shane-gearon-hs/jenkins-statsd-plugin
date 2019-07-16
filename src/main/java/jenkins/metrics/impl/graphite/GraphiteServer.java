@@ -120,11 +120,11 @@ public class GraphiteServer extends AbstractDescribableImpl<GraphiteServer> {
         public synchronized void setServers(@Nonnull List<GraphiteServer> servers) {
             this.servers = servers;
             save();
-            try {
-                Jenkins.getActiveInstance().getPlugin(PluginImpl.class).updateReporters();
-            } catch (URISyntaxException e) {
-                LOGGER.log(Level.WARNING, "Could not update Graphite reporters", e);
-            }
+            // try {
+            //     Jenkins.getActiveInstance().getPlugin(PluginImpl.class).updateReporters();
+            // } catch (URISyntaxException e) {
+            //     LOGGER.log(Level.WARNING, "Could not update Graphite reporters", e);
+            // }
         }
     }
 

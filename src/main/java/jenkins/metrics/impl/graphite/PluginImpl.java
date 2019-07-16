@@ -8,6 +8,7 @@ import jenkins.metrics.api.Metrics;
 import hudson.Plugin;
 import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
+import jenkins.model.GlobalConfiguration;
 import org.apache.commons.lang.StringUtils;
 
 import java.net.InetSocketAddress;
@@ -51,89 +52,81 @@ public class PluginImpl extends Plugin {
     public void start() throws Exception {
     }
 
-    @Override
-    public synchronized void stop() throws Exception {
-        if (reporters != null) {
-            for (StatsDReporter r : reporters.values()) {
-                r.stop();
-            }
-            reporters.clear();
-        }
-        if (envReporter != null) {
-            envReporter.stop();
-        }
-    }
+    // @Override
+    // public synchronized void stop() throws Exception {
+    //     if (reporters != null) {
+    //         for (StatsDReporter r : reporters.values()) {
+    //             r.stop();
+    //         }
+    //         reporters.clear();
+    //     }
+    //     if (envReporter != null) {
+    //         envReporter.stop();
+    //     }
+    // }
 
     @Override
     public synchronized void postInitialize() throws Exception {
-        if (envReporter == null) {
-            MetricRegistry registry = Metrics.metricRegistry();
-            if (System.getenv("STATSD_UDP_HOST") != null) {
-                String statsd_udp_host = System.getenv("STATSD_UDP_HOST");
-                String statsd_udp_port_str = System.getenv("STATSD_UDP_PORT");
-                // Remove beginning slash from marathon app id
-                //String statsd_prefix = System.getenv("MARATHON_APP_ID").substring(1);
-                String statsd_prefix = "jenkinsstatsd";
-                int statsd_udp_port = Integer.parseInt(statsd_udp_port_str);
-
-                StatsDReporter r = StatsDReporter.forRegistry(registry)
-                        .prefixedWith(statsd_prefix)
-                        .convertRatesTo(TimeUnit.MINUTES)
-                        .convertDurationsTo(TimeUnit.SECONDS)
-                        .filter(MetricFilter.ALL)
-                        .build(statsd_udp_host, statsd_udp_port);
-                r.start(10, TimeUnit.SECONDS);
-                envReporter = r;
-                LOGGER.log(Level.INFO, "Started env statsd reporter");
-            }
-        }
-        updateReporters();
-    }
-
-    public synchronized void updateReporters() throws URISyntaxException {
-        if (reporters == null) {
-            reporters = new LinkedHashMap<GraphiteServer, StatsDReporter>();
-        }
         MetricRegistry registry = Metrics.metricRegistry();
-        GraphiteServer.DescriptorImpl descriptor =
-                Jenkins.getActiveInstance().getDescriptorByType(GraphiteServer.DescriptorImpl.class);
-        if (descriptor == null) {
-            return;
-        }
-        JenkinsLocationConfiguration locationConfiguration = JenkinsLocationConfiguration.get();
-        String url = null;
-        if (locationConfiguration != null) {
-            url = locationConfiguration.getUrl();
-        }
-        URI uri = url == null ? null : new URI(url);
-        String hostname = uri == null ? "localhost" : uri.getHost();
-        Set<GraphiteServer> toStop = new HashSet<GraphiteServer>(reporters.keySet());
-        for (GraphiteServer s : descriptor.getServers()) {
-            toStop.remove(s);
-            if (reporters.containsKey(s)) continue;
-            String statsd_udp_host = s.getHostname();
-            int statsd_udp_port = s.getPort();
-            String prefix = StringUtils.isBlank(s.getPrefix()) ? hostname : s.getPrefix();
+        String statsd_udp_host = "service-statsite1.metrics.us-east-1.hootops.com";
+        String statsd_prefix = "service.jenkins.staging.metrics";
+        int statsd_udp_port = 8125;
 
-            StatsDReporter r = StatsDReporter.forRegistry(registry)
-                    .prefixedWith(prefix)
-                    .convertRatesTo(TimeUnit.MINUTES)
-                    .convertDurationsTo(TimeUnit.SECONDS)
-                    .filter(MetricFilter.ALL)
-                    .build(statsd_udp_host, statsd_udp_port);
+        StatsDReporter r = StatsDReporter.forRegistry(registry)
+                .prefixedWith(statsd_prefix)
+                .convertRatesTo(TimeUnit.MINUTES)
+                .convertDurationsTo(TimeUnit.SECONDS)
+                .filter(MetricFilter.ALL)
+                .build(statsd_udp_host, statsd_udp_port);
+        r.start(10, TimeUnit.SECONDS);
 
-            reporters.put(s, r);
-            r.start(10, TimeUnit.SECONDS);
-
-            LOGGER.log(Level.INFO, "Started statsd reporter");
-        }
-        for (GraphiteServer s: toStop) {
-            StatsDReporter r = reporters.get(s);
-            reporters.remove(s);
-            r.stop();
-            LOGGER.log(Level.INFO, "Stopped Graphite reporter to {0}:{1} with prefix {2}", new Object[]{
-                    s.getHostname(), s.getPort(), StringUtils.isBlank(s.getPrefix()) ? hostname : s.getPrefix()
-            });
-        }
+        // updateReporters();
     }
+
+    // public synchronized void updateReporters() throws URISyntaxException {
+    //     if (reporters == null) {
+    //         private List<StatsDReporter> reporters;
+    //     }
+    //     MetricRegistry registry = Metrics.metricRegistry();
+    //     GraphiteServer.DescriptorImpl descriptor =
+    //             Jenkins.getActiveInstance().getDescriptorByType(GraphiteServer.DescriptorImpl.class);
+    //     if (descriptor == null) {
+    //         return;
+    //     }
+    //     JenkinsLocationConfiguration locationConfiguration = JenkinsLocationConfiguration.get();
+    //     String url = null;
+    //     if (locationConfiguration != null) {
+    //         url = locationConfiguration.getUrl();
+    //     }
+    //     URI uri = url == null ? null : new URI(url);
+    //     String hostname = uri == null ? "localhost" : uri.getHost();
+    //     Set<GraphiteServer> toStop = new HashSet<GraphiteServer>(reporters.keySet());
+    //     for (GraphiteServer s : descriptor.getServers()) {
+    //         toStop.remove(s);
+    //         if (reporters.containsKey(s)) continue;
+    //         String statsd_udp_host = s.getHostname();
+    //         int statsd_udp_port = s.getPort();
+    //         String prefix = StringUtils.isBlank(s.getPrefix()) ? hostname : s.getPrefix();
+
+    //         StatsDReporter r = StatsDReporter.forRegistry(registry)
+    //                 .prefixedWith(prefix)
+    //                 .convertRatesTo(TimeUnit.MINUTES)
+    //                 .convertDurationsTo(TimeUnit.SECONDS)
+    //                 .filter(MetricFilter.ALL)
+    //                 .build(statsd_udp_host, statsd_udp_port);
+
+    //         reporters.put(s, r);
+    //         r.start(10, TimeUnit.SECONDS);
+
+    //         LOGGER.log(Level.INFO, "Started statsd reporter");
+    //     }
+    //     for (GraphiteServer s: toStop) {
+    //         StatsDReporter r = reporters.get(s);
+    //         reporters.remove(s);
+    //         r.stop();
+    //         LOGGER.log(Level.INFO, "Stopped Graphite reporter to {0}:{1} with prefix {2}", new Object[]{
+    //                 s.getHostname(), s.getPort(), StringUtils.isBlank(s.getPrefix()) ? hostname : s.getPrefix()
+    //         });
+    //     }
+    // }
 }

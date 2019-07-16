@@ -22,9 +22,15 @@
  ~ THE SOFTWARE.
  -->
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:l="/lib/layout" xmlns:st="jelly:stapler">
-  <f:section title="${%Graphite metrics reporting}">
-    <f:entry title="${%Servers}" field="servers">
-      <f:repeatableProperty field="servers"/>
+  <f:section title="${%StatsD metrics reporting}">
+    <f:entry title="StatsD Hostname" field="statsdHost" name="statsdHost">
+      <f:textbox />
+    </f:entry>
+    <f:entry title="StatsD Port" field="statsdPort" name="statsdPort">
+      <f:textbox default="8125" />
+    </f:entry>
+    <f:entry title="StatsD Bucket" field="statsdBucket" name="statsdBucket">
+      <f:textbox />
     </f:entry>
   </f:section>
 </j:jelly>
