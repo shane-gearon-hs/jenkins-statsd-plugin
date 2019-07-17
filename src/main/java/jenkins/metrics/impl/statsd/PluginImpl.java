@@ -1,4 +1,4 @@
-package jenkins.metrics.impl.graphite;
+package jenkins.metrics.impl.statsd;
 
 import com.codahale.metrics.MetricFilter;
 import com.codahale.metrics.MetricRegistry;
@@ -31,9 +31,9 @@ import com.readytalk.metrics.StatsDReporter;
 public class PluginImpl extends Plugin {
     private static final Logger LOGGER = Logger.getLogger(PluginImpl.class.getName());
 
-    private transient Map<GraphiteServer, StatsDReporter> reporters;
+    // private transient Map<GraphiteServer, StatsDReporter> reporters;
 
-    private StatsDReporter envReporter;
+    // private StatsDReporter envReporter;
 
     static final String SAMPLING_INTERVAL_PROPERTY = "graphite.metrics.intervalSeconds";
 
@@ -45,7 +45,7 @@ public class PluginImpl extends Plugin {
     }
 
     public PluginImpl() {
-        this.reporters = new LinkedHashMap<GraphiteServer, StatsDReporter>();
+        // this.reporters = new LinkedHashMap<GraphiteServer, StatsDReporter>();
     }
 
     @Override
@@ -68,9 +68,10 @@ public class PluginImpl extends Plugin {
     @Override
     public synchronized void postInitialize() throws Exception {
         MetricRegistry registry = Metrics.metricRegistry();
-        String statsd_udp_host = "service-statsite1.metrics.us-east-1.hootops.com";
-        String statsd_prefix = "service.jenkins.staging.metrics";
-        int statsd_udp_port = 8125;
+        StatsdServerConfig statsdConfig = StatsdServerConfig.get();
+        String statsd_udp_host = statsdConfig.getHostname();
+        String statsd_prefix = statsdConfig.getPrefix();
+        int statsd_udp_port = statsdConfig.getPort();
 
         StatsDReporter r = StatsDReporter.forRegistry(registry)
                 .prefixedWith(statsd_prefix)

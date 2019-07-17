@@ -1,4 +1,4 @@
-package jenkins.metrics.impl.graphite;
+package jenkins.metrics.impl.statsd;
 
 import hudson.Extension;
 import hudson.model.AbstractDescribableImpl;
@@ -7,6 +7,7 @@ import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.StaplerRequest;
 
 import javax.annotation.Nonnull;
@@ -38,19 +39,57 @@ public class StatsdServerConfig extends GlobalConfiguration {
     }
 
     @DataBoundConstructor
-    public StatsdServerConfig(String hostname, int port, String prefix) {
+    public StatsdServerConfig() {
         load();
-        this.statsdHost = hostname;
-        this.statsdPort = port;
-        this.statsdBucket = prefix;
+        // this.statsdHost = hostname;
+        // this.statsdPort = port;
+        // this.statsdBucket = prefix;
+        // save();
+    }
+
+    /**
+     * Invoked when the global configuration page is submitted
+     *
+     * @param req Request that represents the form submission
+     * @param json The JSON object that captures the configuration data
+     * @return always returns true (allow config page to be closed)
+     * @throws hudson.model.Descriptor.FormException exception if a form field is invalid
+     */
+    @Override
+    public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
+        req.bindJSON(this, json);
+        return true;
+    }
+
+    @Override
+    public String getDisplayName() {
+        return "Global configuration object for the Metrics StatsD plugin";
+    }
+
+    @DataBoundSetter
+    public void setHostName(String hostName) {
+        this.statsdHost = hostName;
+        save();
     }
 
     public String getHostname() {
         return statsdHost;
     }
 
+    @DataBoundSetter
+    public void setPort(int port) {
+        this.statsdPort = port;
+        save();
+    }
+
     public int getPort() {
         return statsdPort;
+    }
+
+    @DataBoundSetter
+    public void setPrefix(String prefix) {
+        this.statsdBucket = prefix;
+        save();
     }
 
     public String getPrefix() {

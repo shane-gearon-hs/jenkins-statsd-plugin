@@ -1,4 +1,4 @@
-package jenkins.metrics.impl.graphite;
+package jenkins.metrics.impl.statsd;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -7,7 +7,7 @@ import org.junit.Test;
 /**
  * Some trivial tests
  */
-public class GraphiteTest {
+public class StatsdTest {
     @Test
     public void testTimingGetter() throws Exception {
         String value = System.getProperty(PluginImpl.SAMPLING_INTERVAL_PROPERTY);
