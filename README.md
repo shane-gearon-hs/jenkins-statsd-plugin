@@ -1,7 +1,7 @@
-# Metrics Graphite Plugin
+# Metrics StatsD Plugin
 
 This plugin streams [Metrics](http://wiki.jenkins-ci.org/display/JENKINS/Metrics+Plugin) to
-a [Graphite](http://graphite.wikidot.com/) server.
+a StatsD server.
 
 See also this [plugin's wiki page][wiki]
 
@@ -15,7 +15,7 @@ The following build environment is required to build this plugin
 
 To build the plugin locally:
 
-    mvn clean verify
+    mvn install -Dmaven.javadoc.skip=true -Dmaven.test.skip=true
 
 # Release
 
@@ -29,4 +29,3 @@ To test in a local Jenkins instance
 
     mvn hpi:run
 
-  [wiki]: http://wiki.jenkins-ci.org/display/JENKINS/Metrics+Graphite+Plugin

@@ -32,13 +32,13 @@
     <version>2.29</version>
   </parent>
 
-  <artifactId>metrics-graphite</artifactId>
+  <artifactId>metrics-statsd</artifactId>
   <version>3.0.1-SNAPSHOT</version>
   <packaging>hpi</packaging>
 
-  <name>Metrics Graphite Reporting Plugin</name>
+  <name>Metrics StatsD Reporting Plugin</name>
   <description>
-    This plugin streams Metrics to a Graphite server.
+    This plugin streams Metrics to a StatsD server.
   </description>
   <url>http://wiki.jenkins-ci.org/display/JENKINS/Metrics+Graphite+Plugin</url>
   <licenses>
@@ -51,8 +51,8 @@
 
   <developers>
     <developer>
-      <id>stephenconnolly</id>
-      <name>Stephen Connolly</name>
+      <id>shane-gearon-hs</id>
+      <name>Shane Gearon</name>
     </developer>
   </developers>
 
